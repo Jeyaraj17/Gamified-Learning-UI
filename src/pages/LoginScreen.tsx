@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
+import { AnimatedLoginBackground } from '../components/AnimatedLoginBackground'
 import { Character } from '../mechanics/runner/Character'
 
 interface LoginScreenProps {
@@ -17,12 +18,13 @@ export function LoginScreen({ onSubmit }: LoginScreenProps) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-950 via-indigo-800 to-purple-900 px-4">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
+      <AnimatedLoginBackground />
       <motion.div
         initial={{ opacity: 0, y: 24, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: 'spring', stiffness: 180, damping: 20 }}
-        className="w-full max-w-sm rounded-3xl bg-white/95 p-8 text-center shadow-2xl"
+        className="relative z-10 w-full max-w-sm rounded-3xl bg-white/95 p-8 text-center shadow-2xl"
       >
         <div className="mx-auto flex h-24 w-24 items-center justify-center">
           <Character state="idle" />
