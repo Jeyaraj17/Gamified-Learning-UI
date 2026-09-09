@@ -31,6 +31,7 @@ export const useGameProgress = create<GameProgressState>()(
       answerQuestion: (weekId, correct) =>
         set((state) => {
           const prev = state.weeks[weekId] ?? emptyProgress()
+          if (prev.completed) return state
           const currentStreak = correct ? prev.currentStreak + 1 : 0
           const bestStreak = Math.max(prev.bestStreak, currentStreak)
           const badges = new Set(prev.badges)
@@ -51,6 +52,7 @@ export const useGameProgress = create<GameProgressState>()(
       finishWeek: (weekId, totalQuestions) =>
         set((state) => {
           const prev = state.weeks[weekId] ?? emptyProgress()
+          if (prev.completed) return state
           const badges = new Set(prev.badges)
           badges.add('finisher')
           if (prev.wrong === 0 && prev.answered >= totalQuestions) badges.add('perfect')

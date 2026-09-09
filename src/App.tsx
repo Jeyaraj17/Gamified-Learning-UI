@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import { LoadingTransition } from './components/LoadingTransition'
 import { ArchiveHome } from './pages/ArchiveHome'
+import { Leaderboard } from './pages/Leaderboard'
 import { LoginScreen } from './pages/LoginScreen'
 import { WeekPage } from './pages/WeekPage'
 import { useSession } from './store/useSession'
@@ -36,6 +37,7 @@ export default function App() {
     <HashRouter>
       <Routes>
         <Route path="/" element={<ArchiveHome />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/week/:weekId" element={<WeekPage />} />
       </Routes>
     </HashRouter>

@@ -24,7 +24,15 @@ export function ArchiveHome() {
               </button>
             </p>
           </div>
-          <PointsHUD points={totalPoints} streak={0} />
+          <div className="flex flex-col items-end gap-2">
+            <PointsHUD points={totalPoints} streak={0} />
+            <Link
+              to="/leaderboard"
+              className="text-sm font-semibold text-indigo-200 hover:text-white"
+            >
+              🏆 Leaderboard
+            </Link>
+          </div>
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">

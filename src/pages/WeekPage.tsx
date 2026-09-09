@@ -5,6 +5,7 @@ import { PointsHUD } from '../components/PointsHUD'
 import { BADGES } from '../content/badges'
 import { getWeekById } from '../content/weeks'
 import { MECHANIC_REGISTRY } from '../mechanics/registry'
+import { submitScore } from '../services/leaderboard'
 import { useGameProgress } from '../store/useGameProgress'
 import { useSession } from '../store/useSession'
 import type { BadgeDef } from '../types'
@@ -56,9 +57,17 @@ export function WeekPage() {
   }
 
   function handleComplete() {
+    const wasCompleted = useGameProgress.getState().weeks[week!.id]?.completed ?? false
     finishWeek(week!.id, week!.questions.length)
     const updated = useGameProgress.getState().weeks[week!.id]
     if (updated) announceNewBadges(updated.badges)
+
+    if (!wasCompleted && employeeId) {
+      const allWeeks = Object.values(useGameProgress.getState().weeks)
+      const weeksCompleted = allWeeks.filter((w) => w.completed).length
+      submitScore(employeeId, useGameProgress.getState().totalPoints(), weeksCompleted)
+    }
+
     setJustFinished(true)
   }
 
