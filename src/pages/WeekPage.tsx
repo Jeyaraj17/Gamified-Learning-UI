@@ -6,6 +6,7 @@ import { BADGES } from '../content/badges'
 import { getWeekById } from '../content/weeks'
 import { MECHANIC_REGISTRY } from '../mechanics/registry'
 import { submitScore } from '../services/leaderboard'
+import { syncProgress } from '../services/session'
 import { useGameProgress } from '../store/useGameProgress'
 import { useSession } from '../store/useSession'
 import type { BadgeDef } from '../types'
@@ -15,6 +16,7 @@ export function WeekPage() {
   const { weekId } = useParams<{ weekId: string }>()
   const week = weekId ? getWeekById(weekId) : undefined
   const employeeId = useSession((s) => s.employeeId)
+  const name = useSession((s) => s.name)
 
   const weekProgress = useGameProgress((s) => (weekId ? s.weeks[weekId] : undefined))
   const totalPoints = useGameProgress((s) => s.totalPoints())
@@ -63,9 +65,10 @@ export function WeekPage() {
     if (updated) announceNewBadges(updated.badges)
 
     if (!wasCompleted && employeeId) {
-      const allWeeks = Object.values(useGameProgress.getState().weeks)
-      const weeksCompleted = allWeeks.filter((w) => w.completed).length
+      const allWeeks = useGameProgress.getState().weeks
+      const weeksCompleted = Object.values(allWeeks).filter((w) => w.completed).length
       submitScore(employeeId, useGameProgress.getState().totalPoints(), weeksCompleted)
+      syncProgress(employeeId, allWeeks)
     }
 
     setJustFinished(true)
@@ -110,7 +113,7 @@ export function WeekPage() {
           <ChallengeBriefing
             week={week}
             progress={weekProgress}
-            employeeId={employeeId}
+            name={name}
             onStart={() => setStarted(true)}
           />
         )}

@@ -8,7 +8,7 @@ import { useSession } from '../store/useSession'
 export function ArchiveHome() {
   const weeksProgress = useGameProgress((s) => s.weeks)
   const totalPoints = useGameProgress((s) => s.totalPoints())
-  const employeeId = useSession((s) => s.employeeId)
+  const name = useSession((s) => s.name)
   const logout = useSession((s) => s.logout)
 
   return (
@@ -18,7 +18,7 @@ export function ArchiveHome() {
           <div>
             <h1 className="text-3xl font-extrabold">🎮 Learning Quest</h1>
             <p className="text-indigo-200">
-              Welcome, {employeeId} ·{' '}
+              Hi {name} ·{' '}
               <button onClick={logout} className="underline hover:text-white">
                 switch user
               </button>

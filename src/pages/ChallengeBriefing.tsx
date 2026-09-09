@@ -4,11 +4,11 @@ import type { WeekConfig, WeekProgress } from '../types'
 interface ChallengeBriefingProps {
   week: WeekConfig
   progress: WeekProgress | undefined
-  employeeId: string | null
+  name: string | null
   onStart: () => void
 }
 
-export function ChallengeBriefing({ week, progress, employeeId, onStart }: ChallengeBriefingProps) {
+export function ChallengeBriefing({ week, progress, name, onStart }: ChallengeBriefingProps) {
   const completed = progress?.completed ?? false
 
   return (
@@ -19,7 +19,7 @@ export function ChallengeBriefing({ week, progress, employeeId, onStart }: Chall
       className="rounded-3xl bg-white/95 p-8 text-center text-slate-800 shadow-2xl"
     >
       <p className="text-xs font-bold tracking-wide text-indigo-500 uppercase">
-        Challenge invite {employeeId ? `for ${employeeId}` : ''}
+        Challenge invite {name ? `for ${name}` : ''}
       </p>
       <p className="mt-3 text-5xl">🎯</p>
       <h2 className="mt-3 text-2xl font-extrabold">{week.title}</h2>
