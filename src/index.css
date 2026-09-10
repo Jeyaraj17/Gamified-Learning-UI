@@ -12,8 +12,30 @@ body,
 }
 
 body {
-  font-family: 'Segoe UI', system-ui, Roboto, sans-serif;
+  font-family: 'Baloo 2', 'Segoe UI', system-ui, Roboto, sans-serif;
   background: #0b1021;
+}
+
+.font-display {
+  font-family: 'Bangers', 'Segoe UI', cursive;
+  letter-spacing: 0.03em;
+}
+
+.btn-game {
+  border-bottom-width: 4px;
+  border-color: rgb(0 0 0 / 0.25);
+  box-shadow: 0 6px 0 rgb(0 0 0 / 0.25);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.btn-game:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 0.25);
+}
+
+.btn-game:disabled {
+  box-shadow: none;
+  border-bottom-width: 0;
 }
 
 @keyframes scroll-slow {

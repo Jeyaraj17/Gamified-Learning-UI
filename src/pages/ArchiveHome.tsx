@@ -16,7 +16,9 @@ export function ArchiveHome() {
       <div className="mx-auto max-w-3xl">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-extrabold">🎮 Learning Quest</h1>
+            <h1 className="font-display text-4xl text-amber-300 drop-shadow-[2px_2px_0_rgba(0,0,0,0.35)]">
+              🎮 Learning Quest
+            </h1>
             <p className="text-indigo-200">
               Hi {name} ·{' '}
               <button onClick={logout} className="underline hover:text-white">
@@ -43,12 +45,12 @@ export function ArchiveHome() {
               <Link
                 key={week.id}
                 to={`/week/${week.id}`}
-                className="rounded-2xl bg-white/95 p-5 text-slate-800 shadow-xl transition hover:-translate-y-1 hover:shadow-2xl"
+                className="rounded-2xl border-b-4 border-indigo-200 bg-white/95 p-5 text-slate-800 shadow-xl transition hover:-translate-y-1 hover:shadow-2xl"
               >
                 <p className="text-xs font-bold tracking-wide text-indigo-500 uppercase">
                   Week {week.weekNumber}
                 </p>
-                <h2 className="mt-1 text-lg font-bold">{week.title}</h2>
+                <h2 className="font-display mt-1 text-xl text-indigo-700">{week.title}</h2>
                 <p className="mt-1 text-sm text-slate-500">{week.topic}</p>
                 <p className="mt-3 text-sm text-slate-400">{week.description}</p>
                 <div className="mt-4 flex flex-wrap items-center gap-2">

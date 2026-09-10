@@ -1,56 +1,57 @@
 import { motion, type Variants } from 'framer-motion'
 
-export type CharacterState = 'idle' | 'running' | 'jumping' | 'stumbling'
+export type CharacterState = 'idle' | 'running' | 'jumping' | 'falling'
 
 const bodyVariants: Variants = {
   idle: { y: [0, -3, 0], x: 0, rotate: 0, transition: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' } },
   running: { y: [0, -6, 0], x: 0, rotate: 0, transition: { duration: 0.32, repeat: Infinity, ease: 'easeInOut' } },
   jumping: {
-    y: [0, -55, 0],
-    x: [0, 30, 60],
-    rotate: [0, -10, 0],
-    transition: { duration: 0.7, ease: 'easeOut' },
+    y: [0, -60, 0],
+    x: [0, 20, 0],
+    rotate: [0, -12, 0],
+    transition: { duration: 0.65, ease: 'easeOut' },
   },
-  stumbling: {
-    x: [0, -22, 6, 0],
-    rotate: [0, 18, -10, 0],
-    transition: { duration: 0.6, ease: 'easeInOut' },
+  falling: {
+    y: [0, 12, 58, 20],
+    x: [0, -8, -16, 0],
+    rotate: [0, -12, 35, 0],
+    transition: { duration: 0.75, ease: 'easeInOut' },
   },
 }
 
 const shadowVariants: Variants = {
   idle: { scaleX: [1, 0.92, 1], opacity: [0.35, 0.3, 0.35], transition: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' } },
   running: { scaleX: [1, 0.85, 1], opacity: [0.35, 0.28, 0.35], transition: { duration: 0.32, repeat: Infinity, ease: 'easeInOut' } },
-  jumping: { scaleX: [1, 0.5, 1], opacity: [0.35, 0.15, 0.35], transition: { duration: 0.7, ease: 'easeOut' } },
-  stumbling: { scaleX: 1.1, opacity: 0.3, transition: { duration: 0.6 } },
+  jumping: { scaleX: [1, 0.45, 1], opacity: [0.35, 0.12, 0.35], transition: { duration: 0.65, ease: 'easeOut' } },
+  falling: { scaleX: [1, 0.7, 1.3, 0.9], opacity: [0.35, 0.2, 0.45, 0.3], transition: { duration: 0.75, ease: 'easeInOut' } },
 }
 
 const legVariantsLeft: Variants = {
   idle: { rotate: 0 },
   running: { rotate: [-25, 25, -25], transition: { duration: 0.28, repeat: Infinity, ease: 'easeInOut' } },
   jumping: { rotate: 15 },
-  stumbling: { rotate: 0 },
+  falling: { rotate: [0, -20, 20, 0], transition: { duration: 0.75 } },
 }
 
 const legVariantsRight: Variants = {
   idle: { rotate: 0 },
   running: { rotate: [25, -25, 25], transition: { duration: 0.28, repeat: Infinity, ease: 'easeInOut' } },
   jumping: { rotate: -15 },
-  stumbling: { rotate: 0 },
+  falling: { rotate: [0, 20, -20, 0], transition: { duration: 0.75 } },
 }
 
 const armVariantsLeft: Variants = {
   idle: { rotate: 0 },
   running: { rotate: [20, -20, 20], transition: { duration: 0.32, repeat: Infinity, ease: 'easeInOut' } },
   jumping: { rotate: -40 },
-  stumbling: { rotate: 30 },
+  falling: { rotate: [30, 60, -30, 30], transition: { duration: 0.75 } },
 }
 
 const armVariantsRight: Variants = {
   idle: { rotate: 0 },
   running: { rotate: [-20, 20, -20], transition: { duration: 0.32, repeat: Infinity, ease: 'easeInOut' } },
   jumping: { rotate: 40 },
-  stumbling: { rotate: -30 },
+  falling: { rotate: [-30, -60, 30, -30], transition: { duration: 0.75 } },
 }
 
 interface CharacterProps {
@@ -130,7 +131,7 @@ export function Character({ state }: CharacterProps) {
           <circle cx="40" cy="40" r="2.4" fill="#111827" />
           <circle cx="60" cy="40" r="2.4" fill="#111827" />
 
-          {state === 'stumbling' ? (
+          {state === 'falling' ? (
             <>
               <path d="M38 58 Q50 52 62 58" stroke="#111827" strokeWidth="3" fill="none" strokeLinecap="round" />
               <circle cx="68" cy="30" r="3" fill="#7dd3fc" />

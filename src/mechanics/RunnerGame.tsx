@@ -1,63 +1,109 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
+import { LivesHUD } from '../components/LivesHUD'
 import { ProgressBar } from '../components/ProgressBar'
 import type { MechanicProps } from '../types'
-import { Character, type CharacterState } from './runner/Character'
+import { BrickTrack } from './runner/BrickTrack'
+import type { CharacterState } from './runner/Character'
 import { ObstacleQuestion } from './runner/ObstacleQuestion'
 import { ParallaxBackground } from './runner/ParallaxBackground'
 
+const MAX_LIVES = 3
 const CORRECT_DELAY_MS = 800
-const WRONG_DELAY_MS = 700
+const WRONG_DELAY_MS = 900
+const GAME_OVER_PAUSE_MS = 1800
 
-export function RunnerGame({ questions, onAnswer, onComplete }: MechanicProps) {
+export function RunnerGame({ questions, onAnswer, onComplete, onRestart }: MechanicProps) {
   const [index, setIndex] = useState(0)
-  const [charState, setCharState] = useState<CharacterState>('running')
+  const [lives, setLives] = useState(MAX_LIVES)
+  const [charState, setCharState] = useState<CharacterState>('idle')
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [locked, setLocked] = useState(false)
+  const [gameOver, setGameOver] = useState(false)
 
   const question = questions[index]
-  const moving = charState !== 'stumbling'
+  const moving = charState === 'jumping'
+
+  function advance() {
+    const isLast = index + 1 >= questions.length
+    if (isLast) {
+      setCharState('idle')
+      onComplete()
+      return
+    }
+    setIndex((i) => i + 1)
+    setSelectedIndex(null)
+    setLocked(false)
+    setCharState('idle')
+  }
+
+  function triggerGameOver() {
+    setGameOver(true)
+    window.setTimeout(() => {
+      onRestart()
+      setIndex(0)
+      setLives(MAX_LIVES)
+      setSelectedIndex(null)
+      setLocked(false)
+      setCharState('idle')
+      setGameOver(false)
+    }, GAME_OVER_PAUSE_MS)
+  }
 
   function handleSelect(choiceIndex: number) {
-    if (locked) return
+    if (locked || gameOver) return
     const correct = choiceIndex === question.correctIndex
 
     setSelectedIndex(choiceIndex)
     setLocked(true)
-    setCharState(correct ? 'jumping' : 'stumbling')
     onAnswer(correct)
 
-    window.setTimeout(
-      () => {
-        const isLast = index + 1 >= questions.length
-        if (isLast) {
-          setCharState('running')
-          onComplete()
-          return
-        }
-        setIndex((i) => i + 1)
-        setSelectedIndex(null)
-        setLocked(false)
-        setCharState('running')
-      },
-      correct ? CORRECT_DELAY_MS : WRONG_DELAY_MS,
-    )
+    if (correct) {
+      setCharState('jumping')
+      window.setTimeout(advance, CORRECT_DELAY_MS)
+      return
+    }
+
+    setCharState('falling')
+    const remaining = lives - 1
+    setLives(remaining)
+    window.setTimeout(remaining <= 0 ? triggerGameOver : advance, WRONG_DELAY_MS)
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <ProgressBar current={index} total={questions.length} />
-
-      <div className="relative h-56 w-full">
-        <ParallaxBackground moving={moving} />
-        <div className="absolute bottom-8 left-10">
-          <Character state={charState} />
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <ProgressBar current={index} total={questions.length} />
         </div>
+        <LivesHUD lives={lives} maxLives={MAX_LIVES} />
+      </div>
+
+      <div className="relative h-56 w-full overflow-hidden rounded-3xl">
+        <ParallaxBackground moving={moving} />
+        <div className="absolute inset-x-0 bottom-4">
+          <BrickTrack total={questions.length} current={index} charState={charState} />
+        </div>
+
+        <AnimatePresence>
+          {gameOver && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/60 text-white"
+            >
+              <p className="font-display text-4xl text-red-400">GAME OVER</p>
+              <p className="text-sm text-slate-200">Out of lives — restarting the challenge...</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <ObstacleQuestion
         question={question}
         selectedIndex={selectedIndex}
-        disabled={locked}
+        disabled={locked || gameOver}
         onSelect={handleSelect}
       />
     </div>

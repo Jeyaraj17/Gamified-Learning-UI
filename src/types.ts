@@ -37,4 +37,5 @@ export interface MechanicProps {
   questions: Question[]
   onAnswer: (correct: boolean) => void
   onComplete: () => void
+  onRestart: () => void
 }

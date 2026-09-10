@@ -18,9 +18,9 @@ export function ObstacleQuestion({ question, selectedIndex, disabled, onSelect }
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className="rounded-2xl bg-white/95 p-5 shadow-2xl"
+      className="rounded-2xl border-b-4 border-indigo-200 bg-white/95 p-5 shadow-2xl"
     >
-      <p className="mb-4 text-lg font-bold text-slate-800">{question.prompt}</p>
+      <p className="mb-4 text-xl font-bold text-slate-800">{question.prompt}</p>
       <div className="grid gap-2">
         {question.choices.map((choice, i) => {
           const isSelected = selectedIndex === i
@@ -41,7 +41,7 @@ export function ObstacleQuestion({ question, selectedIndex, disabled, onSelect }
               whileTap={!disabled ? { scale: 0.98 } : undefined}
               animate={isSelected && !isCorrect ? { x: [0, -8, 8, -6, 6, 0] } : { x: 0 }}
               transition={isSelected && !isCorrect ? { duration: 0.4 } : { type: 'spring', stiffness: 300 }}
-              className={`flex items-center gap-3 rounded-xl border-2 px-4 py-2 text-left font-medium text-slate-700 transition disabled:cursor-not-allowed ${border}`}
+              className={`flex items-center gap-3 rounded-2xl border-2 border-b-4 px-4 py-3 text-left font-semibold text-slate-700 transition disabled:cursor-not-allowed ${border}`}
             >
               <span
                 className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${LETTER_COLORS[i]}`}

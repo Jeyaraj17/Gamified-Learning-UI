@@ -22,6 +22,7 @@ export function WeekPage() {
   const totalPoints = useGameProgress((s) => s.totalPoints())
   const answerQuestion = useGameProgress((s) => s.answerQuestion)
   const finishWeek = useGameProgress((s) => s.finishWeek)
+  const resetWeekAttempt = useGameProgress((s) => s.resetWeekAttempt)
 
   const [toastBadge, setToastBadge] = useState<BadgeDef | null>(null)
   const [started, setStarted] = useState(false)
@@ -74,6 +75,11 @@ export function WeekPage() {
     setJustFinished(true)
   }
 
+  function handleRestart() {
+    resetWeekAttempt(week!.id)
+    knownBadges.current = new Set()
+  }
+
   const streak = weekProgress?.currentStreak ?? 0
 
   return (
@@ -88,7 +94,7 @@ export function WeekPage() {
       </div>
 
       <div className="mx-auto mt-4 max-w-2xl">
-        <h1 className="text-2xl font-extrabold">{week.title}</h1>
+        <h1 className="font-display text-3xl text-amber-300">{week.title}</h1>
         <p className="text-indigo-200">{week.topic}</p>
       </div>
 
@@ -96,19 +102,24 @@ export function WeekPage() {
         {justFinished ? (
           <div className="rounded-2xl bg-white/95 p-8 text-center text-slate-800 shadow-2xl">
             <p className="text-4xl">🏁</p>
-            <h2 className="mt-2 text-xl font-bold">Week complete!</h2>
+            <h2 className="font-display mt-2 text-2xl text-indigo-700">Week complete!</h2>
             <p className="mt-1 text-slate-500">
               {weekProgress?.correct ?? 0} / {week.questions.length} correct
             </p>
             <Link
               to="/"
-              className="mt-4 inline-block rounded-full bg-indigo-600 px-6 py-2 font-semibold text-white hover:bg-indigo-700"
+              className="btn-game mt-4 inline-block rounded-2xl bg-gradient-to-b from-indigo-500 to-indigo-700 px-6 py-2 font-semibold text-white"
             >
               Back to archive
             </Link>
           </div>
         ) : started ? (
-          <Mechanic questions={week.questions} onAnswer={handleAnswer} onComplete={handleComplete} />
+          <Mechanic
+            questions={week.questions}
+            onAnswer={handleAnswer}
+            onComplete={handleComplete}
+            onRestart={handleRestart}
+          />
         ) : (
           <ChallengeBriefing
             week={week}

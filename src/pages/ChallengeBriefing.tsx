@@ -22,23 +22,23 @@ export function ChallengeBriefing({ week, progress, name, onStart }: ChallengeBr
         Challenge invite {name ? `for ${name}` : ''}
       </p>
       <p className="mt-3 text-5xl">🎯</p>
-      <h2 className="mt-3 text-2xl font-extrabold">{week.title}</h2>
+      <h2 className="font-display mt-3 text-3xl text-indigo-700">{week.title}</h2>
       <p className="mt-1 font-medium text-slate-500">{week.topic}</p>
       <p className="mx-auto mt-4 max-w-sm text-sm text-slate-500">{week.description}</p>
 
       <div className="mt-5 flex justify-center gap-4 text-sm font-semibold text-slate-500">
         <span>📝 {week.questions.length} questions</span>
+        <span>❤️❤️❤️ 3 lives</span>
         {completed && <span>🏆 Best: {progress?.correct}/{week.questions.length}</span>}
       </div>
+      <p className="mt-1 text-xs text-slate-400">Miss 3 answers and the challenge restarts from question 1!</p>
 
-      <motion.button
+      <button
         onClick={onStart}
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.96 }}
-        className="mt-7 rounded-full bg-indigo-600 px-8 py-3 text-lg font-bold text-white shadow-lg transition hover:bg-indigo-700"
+        className="btn-game mt-7 rounded-2xl bg-gradient-to-b from-indigo-500 to-indigo-700 px-8 py-3 text-lg font-bold text-white"
       >
         {completed ? 'Replay Challenge 🔁' : 'Accept Challenge ▶'}
-      </motion.button>
+      </button>
     </motion.div>
   )
 }

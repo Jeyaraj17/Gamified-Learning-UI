@@ -19,7 +19,9 @@ export function Leaderboard() {
       <div className="mx-auto max-w-2xl">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-extrabold">🏆 Leaderboard</h1>
+            <h1 className="font-display text-4xl text-amber-300 drop-shadow-[2px_2px_0_rgba(0,0,0,0.35)]">
+              🏆 Leaderboard
+            </h1>
             <p className="text-indigo-200">Top scores across the team.</p>
           </div>
           <Link to="/" className="text-sm font-semibold text-indigo-200 hover:text-white">
