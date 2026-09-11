@@ -1,64 +1,103 @@
-import { motion, type Variants } from 'framer-motion'
+import { AnimatePresence, motion, type Variants } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
 
 export type CharacterState = 'idle' | 'running' | 'jumping' | 'falling'
 
 const bodyVariants: Variants = {
-  idle: { y: [0, -3, 0], x: 0, rotate: 0, transition: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' } },
-  running: { y: [0, -6, 0], x: 0, rotate: 0, transition: { duration: 0.32, repeat: Infinity, ease: 'easeInOut' } },
+  idle: { y: [0, -3, 0], scaleX: 1, scaleY: 1, rotate: 0, transition: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' } },
+  running: { y: [0, -6, 0], scaleX: 1, scaleY: 1, rotate: 0, transition: { duration: 0.32, repeat: Infinity, ease: 'easeInOut' } },
   jumping: {
-    y: [0, -60, 0],
-    x: [0, 20, 0],
-    rotate: [0, -12, 0],
-    transition: { duration: 0.65, ease: 'easeOut' },
+    y: [0, 6, -48, -52, -48, 4, 0],
+    scaleY: [1, 0.8, 1.06, 1.08, 1.06, 0.85, 1],
+    scaleX: [1, 1.15, 0.95, 0.92, 0.95, 1.12, 1],
+    rotate: [0, 0, -8, -10, -6, 0, 0],
+    transition: { duration: 0.72, times: [0, 0.12, 0.38, 0.52, 0.68, 0.88, 1], ease: 'easeInOut' },
   },
   falling: {
-    y: [0, 12, 58, 20],
-    x: [0, -8, -16, 0],
-    rotate: [0, -12, 35, 0],
-    transition: { duration: 0.75, ease: 'easeInOut' },
+    y: [0, -10, 16, 50, 62, 62, 20, 0],
+    scaleY: [1, 1.1, 0.95, 0.9, 0.78, 0.78, 1.05, 1],
+    scaleX: [1, 0.9, 1.05, 1.05, 1.15, 1.15, 0.95, 1],
+    rotate: [0, -6, 12, 28, 35, 35, 10, 0],
+    transition: { duration: 0.85, times: [0, 0.15, 0.35, 0.55, 0.68, 0.72, 0.88, 1], ease: 'easeInOut' },
   },
 }
 
 const shadowVariants: Variants = {
   idle: { scaleX: [1, 0.92, 1], opacity: [0.35, 0.3, 0.35], transition: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' } },
   running: { scaleX: [1, 0.85, 1], opacity: [0.35, 0.28, 0.35], transition: { duration: 0.32, repeat: Infinity, ease: 'easeInOut' } },
-  jumping: { scaleX: [1, 0.45, 1], opacity: [0.35, 0.12, 0.35], transition: { duration: 0.65, ease: 'easeOut' } },
-  falling: { scaleX: [1, 0.7, 1.3, 0.9], opacity: [0.35, 0.2, 0.45, 0.3], transition: { duration: 0.75, ease: 'easeInOut' } },
+  jumping: { scaleX: [1, 0.45, 1], opacity: [0.35, 0.1, 0.35], transition: { duration: 0.72, ease: 'easeOut' } },
+  falling: { scaleX: [1, 0.6, 0], opacity: [0.35, 0.2, 0], transition: { duration: 0.85, times: [0, 0.4, 0.7] } },
 }
 
 const legVariantsLeft: Variants = {
   idle: { rotate: 0 },
   running: { rotate: [-25, 25, -25], transition: { duration: 0.28, repeat: Infinity, ease: 'easeInOut' } },
-  jumping: { rotate: 15 },
-  falling: { rotate: [0, -20, 20, 0], transition: { duration: 0.75 } },
+  jumping: { rotate: [10, -20, 15, 15, 15, -5, 10], transition: { duration: 0.72 } },
+  falling: { rotate: [0, -25, 25, -20, -20, 10, 0], transition: { duration: 0.85 } },
 }
 
 const legVariantsRight: Variants = {
   idle: { rotate: 0 },
   running: { rotate: [25, -25, 25], transition: { duration: 0.28, repeat: Infinity, ease: 'easeInOut' } },
-  jumping: { rotate: -15 },
-  falling: { rotate: [0, 20, -20, 0], transition: { duration: 0.75 } },
+  jumping: { rotate: [-10, 20, -15, -15, -15, 5, -10], transition: { duration: 0.72 } },
+  falling: { rotate: [0, 25, -25, 20, 20, -10, 0], transition: { duration: 0.85 } },
 }
 
 const armVariantsLeft: Variants = {
   idle: { rotate: 0 },
   running: { rotate: [20, -20, 20], transition: { duration: 0.32, repeat: Infinity, ease: 'easeInOut' } },
-  jumping: { rotate: -40 },
-  falling: { rotate: [30, 60, -30, 30], transition: { duration: 0.75 } },
+  jumping: { rotate: [10, -50, -40, -40, -40, 20, 10], transition: { duration: 0.72 } },
+  falling: { rotate: [30, 70, 60, 60, 60, -30, 30], transition: { duration: 0.85 } },
 }
 
 const armVariantsRight: Variants = {
   idle: { rotate: 0 },
   running: { rotate: [-20, 20, -20], transition: { duration: 0.32, repeat: Infinity, ease: 'easeInOut' } },
-  jumping: { rotate: 40 },
-  falling: { rotate: [-30, -60, 30, -30], transition: { duration: 0.75 } },
+  jumping: { rotate: [-10, 50, 40, 40, 40, -20, -10], transition: { duration: 0.72 } },
+  falling: { rotate: [-30, -70, -60, -60, -60, 30, -30], transition: { duration: 0.85 } },
 }
 
 interface CharacterProps {
   state: CharacterState
 }
 
+function DustPuff() {
+  return (
+    <motion.div
+      className="absolute bottom-0 left-1/2 -translate-x-1/2"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: [0, 1, 0] }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.45 }}
+    >
+      {[-10, 0, 10].map((dx) => (
+        <motion.span
+          key={dx}
+          className="absolute h-2 w-2 rounded-full bg-white/70"
+          initial={{ x: 0, y: 0, scale: 0.4, opacity: 0.8 }}
+          animate={{ x: dx * 2.2, y: -8, scale: 1, opacity: 0 }}
+          transition={{ duration: 0.45, ease: 'easeOut' }}
+        />
+      ))}
+    </motion.div>
+  )
+}
+
 export function Character({ state }: CharacterProps) {
+  const [showDust, setShowDust] = useState(false)
+  const prevState = useRef(state)
+
+  useEffect(() => {
+    const was = prevState.current
+    prevState.current = state
+    const wasAirborne = was === 'jumping' || was === 'falling'
+    if (wasAirborne && state !== was) {
+      setShowDust(true)
+      const t = window.setTimeout(() => setShowDust(false), 450)
+      return () => window.clearTimeout(t)
+    }
+  }, [state])
+
   return (
     <div className="relative h-28 w-24">
       <motion.div
@@ -66,6 +105,8 @@ export function Character({ state }: CharacterProps) {
         animate={state}
         variants={shadowVariants}
       />
+
+      <AnimatePresence>{showDust && <DustPuff />}</AnimatePresence>
 
       {state === 'running' && (
         <motion.div

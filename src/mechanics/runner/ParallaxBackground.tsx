@@ -1,17 +1,12 @@
-interface ParallaxBackgroundProps {
-  moving: boolean
-}
+import { motion } from 'framer-motion'
 
 function SkyDecor() {
   return (
     <svg viewBox="0 0 400 100" className="h-full w-1/2" preserveAspectRatio="none">
-      <circle cx="340" cy="24" r="16" fill="#fde68a" opacity="0.9" />
       <ellipse cx="60" cy="40" rx="40" ry="18" fill="white" opacity="0.9" />
       <ellipse cx="100" cy="30" rx="30" ry="14" fill="white" opacity="0.9" />
       <ellipse cx="260" cy="50" rx="45" ry="20" fill="white" opacity="0.8" />
       <ellipse cx="300" cy="38" rx="26" ry="12" fill="white" opacity="0.8" />
-      <path d="M150 20 L160 14 L170 20" stroke="#94a3b8" strokeWidth="2" fill="none" strokeLinecap="round" />
-      <path d="M180 34 L190 28 L200 34" stroke="#94a3b8" strokeWidth="2" fill="none" strokeLinecap="round" />
     </svg>
   )
 }
@@ -33,49 +28,62 @@ function Hills() {
   )
 }
 
-function GroundStripes() {
+function Bird({ delay }: { delay: number }) {
   return (
-    <svg viewBox="0 0 400 40" className="h-full w-1/2" preserveAspectRatio="none">
-      <rect width="400" height="40" fill="#15803d" />
-      {Array.from({ length: 10 }).map((_, i) => (
-        <g key={i}>
-          <rect x={i * 40 + 6} y="14" width="20" height="6" rx="3" fill="#166534" />
-          <path
-            d={`M${i * 40 + 32} 14 l3 -8 l3 8 Z`}
-            fill="#22c55e"
-          />
-        </g>
-      ))}
-    </svg>
+    <motion.div
+      className="absolute flex items-center gap-0.5"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: [0, 1, 1, 0] }}
+      transition={{ duration: 9, repeat: Infinity, delay, times: [0, 0.08, 0.9, 1] }}
+      style={{ top: `${10 + delay * 6}%` }}
+    >
+      <motion.span
+        className="block h-[6px] w-[10px] origin-bottom-right border-t-[2px] border-slate-600"
+        animate={{ rotate: [25, -15, 25] }}
+        transition={{ duration: 0.45, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.span
+        className="block h-[6px] w-[10px] origin-bottom-left border-t-[2px] border-slate-600"
+        animate={{ rotate: [-25, 15, -25] }}
+        transition={{ duration: 0.45, repeat: Infinity, ease: 'easeInOut' }}
+      />
+    </motion.div>
   )
 }
 
-export function ParallaxBackground({ moving }: ParallaxBackgroundProps) {
+export function ParallaxBackground() {
   return (
-    <div className="absolute inset-0 overflow-hidden rounded-3xl bg-gradient-to-b from-sky-300 via-sky-200 to-sky-100">
+    <div className="absolute inset-0 overflow-hidden rounded-3xl bg-gradient-to-b from-sky-400 via-sky-200 to-amber-50">
+      <motion.div
+        className="absolute top-6 right-10 h-14 w-14 rounded-full bg-amber-200"
+        animate={{ scale: [1, 1.08, 1], opacity: [0.85, 1, 0.85] }}
+        transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ boxShadow: '0 0 40px 12px rgba(253,224,71,0.55)' }}
+      />
+
+      <div className="absolute top-2 h-24 w-full overflow-hidden">
+        <Bird delay={0} />
+        <Bird delay={3} />
+        <Bird delay={6} />
+      </div>
+
       <div
         className="absolute top-4 left-0 flex h-20 w-[200%]"
-        style={{ animation: moving ? 'scroll-slow 22s linear infinite' : 'none' }}
+        style={{ animation: 'scroll-slow 26s linear infinite' }}
       >
         <SkyDecor />
         <SkyDecor />
       </div>
 
       <div
-        className="absolute bottom-14 left-0 flex h-28 w-[200%]"
-        style={{ animation: moving ? 'scroll-mid 10s linear infinite' : 'none' }}
+        className="absolute bottom-0 left-0 flex h-28 w-[200%]"
+        style={{ animation: 'scroll-mid 14s linear infinite' }}
       >
         <Hills />
         <Hills />
       </div>
 
-      <div
-        className="absolute bottom-0 left-0 flex h-14 w-[200%]"
-        style={{ animation: moving ? 'scroll-fast 2.2s linear infinite' : 'none' }}
-      >
-        <GroundStripes />
-        <GroundStripes />
-      </div>
+      <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_40px_rgba(0,0,0,0.15)]" />
     </div>
   )
 }

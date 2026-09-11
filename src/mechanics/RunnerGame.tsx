@@ -9,12 +9,13 @@ import { ObstacleQuestion } from './runner/ObstacleQuestion'
 import { ParallaxBackground } from './runner/ParallaxBackground'
 
 const MAX_LIVES = 3
-const CORRECT_DELAY_MS = 800
-const WRONG_DELAY_MS = 900
+const CORRECT_DELAY_MS = 750
+const WRONG_DELAY_MS = 950
 const GAME_OVER_PAUSE_MS = 1800
 
 export function RunnerGame({ questions, onAnswer, onComplete, onRestart }: MechanicProps) {
   const [index, setIndex] = useState(0)
+  const [worldPos, setWorldPos] = useState(0)
   const [lives, setLives] = useState(MAX_LIVES)
   const [charState, setCharState] = useState<CharacterState>('idle')
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
@@ -22,7 +23,6 @@ export function RunnerGame({ questions, onAnswer, onComplete, onRestart }: Mecha
   const [gameOver, setGameOver] = useState(false)
 
   const question = questions[index]
-  const moving = charState === 'jumping'
 
   function advance() {
     const isLast = index + 1 >= questions.length
@@ -42,6 +42,7 @@ export function RunnerGame({ questions, onAnswer, onComplete, onRestart }: Mecha
     window.setTimeout(() => {
       onRestart()
       setIndex(0)
+      setWorldPos(0)
       setLives(MAX_LIVES)
       setSelectedIndex(null)
       setLocked(false)
@@ -57,6 +58,7 @@ export function RunnerGame({ questions, onAnswer, onComplete, onRestart }: Mecha
     setSelectedIndex(choiceIndex)
     setLocked(true)
     onAnswer(correct)
+    setWorldPos((p) => p + 1)
 
     if (correct) {
       setCharState('jumping')
@@ -79,10 +81,10 @@ export function RunnerGame({ questions, onAnswer, onComplete, onRestart }: Mecha
         <LivesHUD lives={lives} maxLives={MAX_LIVES} />
       </div>
 
-      <div className="relative h-56 w-full overflow-hidden rounded-3xl">
-        <ParallaxBackground moving={moving} />
+      <div className="relative h-64 w-full overflow-hidden rounded-3xl">
+        <ParallaxBackground />
         <div className="absolute inset-x-0 bottom-4">
-          <BrickTrack total={questions.length} current={index} charState={charState} />
+          <BrickTrack total={questions.length} worldPos={worldPos} charState={charState} />
         </div>
 
         <AnimatePresence>
