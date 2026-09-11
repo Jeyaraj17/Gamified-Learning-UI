@@ -25,6 +25,7 @@ interface GameProgressState {
   hydrate: (weeks: Record<string, WeekProgress>) => void
   reset: () => void
   failWeek: (weekId: string) => void
+  markAnswersViewed: (weekId: string) => void
 }
 
 export const useGameProgress = create<GameProgressState>()(
@@ -83,6 +84,14 @@ export const useGameProgress = create<GameProgressState>()(
           if (prev.completed) return state
           return {
             weeks: { ...state.weeks, [weekId]: { ...prev, completed: true, failed: true } },
+          }
+        }),
+
+      markAnswersViewed: (weekId) =>
+        set((state) => {
+          const prev = state.weeks[weekId] ?? emptyProgress()
+          return {
+            weeks: { ...state.weeks, [weekId]: { ...prev, answersViewed: true } },
           }
         }),
     }),

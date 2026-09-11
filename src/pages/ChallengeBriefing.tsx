@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import type { WeekConfig, WeekProgress } from '../types'
 
 interface ChallengeBriefingProps {
@@ -10,6 +11,7 @@ interface ChallengeBriefingProps {
 
 export function ChallengeBriefing({ week, progress, name, onStart }: ChallengeBriefingProps) {
   const completed = progress?.completed ?? false
+  const answersViewed = progress?.answersViewed ?? false
 
   return (
     <motion.div
@@ -37,17 +39,28 @@ export function ChallengeBriefing({ week, progress, name, onStart }: ChallengeBr
       </div>
 
       <p className="mx-auto mt-2 max-w-sm text-xs text-slate-400">
-        {completed
-          ? 'Your score for this challenge is already locked in — replays are just for practice.'
-          : 'Miss 3 answers and it’s game over — your score locks in wherever you stopped, so make them count!'}
+        {answersViewed
+          ? 'You’ve already seen the answers for this challenge, so it can’t be played again.'
+          : completed
+            ? 'Your score for this challenge is already locked in — replays are just for practice.'
+            : 'Miss 3 answers and it’s game over — your score locks in wherever you stopped, so make them count!'}
       </p>
 
-      <button
-        onClick={onStart}
-        className="btn-game mt-7 rounded-2xl bg-gradient-to-b from-indigo-500 to-indigo-700 px-8 py-3 text-lg font-bold text-white"
-      >
-        {completed ? 'Replay for practice 🔁' : 'Accept Challenge ▶'}
-      </button>
+      {answersViewed ? (
+        <Link
+          to="/"
+          className="btn-game mt-7 inline-block rounded-2xl bg-gradient-to-b from-indigo-500 to-indigo-700 px-8 py-3 text-lg font-bold text-white"
+        >
+          Back to archive
+        </Link>
+      ) : (
+        <button
+          onClick={onStart}
+          className="btn-game mt-7 rounded-2xl bg-gradient-to-b from-indigo-500 to-indigo-700 px-8 py-3 text-lg font-bold text-white"
+        >
+          {completed ? 'Replay for practice 🔁' : 'Accept Challenge ▶'}
+        </button>
+      )}
     </motion.div>
   )
 }

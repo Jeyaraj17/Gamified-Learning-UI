@@ -11,6 +11,7 @@ import { useGameProgress } from '../store/useGameProgress'
 import { useSession } from '../store/useSession'
 import type { BadgeDef } from '../types'
 import { ChallengeBriefing } from './ChallengeBriefing'
+import { ChallengeResult } from './ChallengeResult'
 
 type Phase = 'briefing' | 'playing' | 'finished' | 'gameover'
 
@@ -26,6 +27,7 @@ export function WeekPage() {
   const answerQuestion = useGameProgress((s) => s.answerQuestion)
   const finishWeek = useGameProgress((s) => s.finishWeek)
   const failWeek = useGameProgress((s) => s.failWeek)
+  const markAnswersViewed = useGameProgress((s) => s.markAnswersViewed)
 
   const [toastBadge, setToastBadge] = useState<BadgeDef | null>(null)
   const [phase, setPhase] = useState<Phase>('briefing')
@@ -90,8 +92,12 @@ export function WeekPage() {
     setPhase('playing')
   }
 
+  function revealAnswers() {
+    markAnswersViewed(week!.id)
+    if (employeeId) syncProgress(employeeId, useGameProgress.getState().weeks)
+  }
+
   const streak = weekProgress?.currentStreak ?? 0
-  const scoreLine = `${weekProgress?.correct ?? 0} / ${week.questions.length} correct · ${weekPoints} pts`
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-900 via-indigo-800 to-slate-900 px-4 py-6 text-white">
@@ -110,74 +116,17 @@ export function WeekPage() {
       </div>
 
       <div className="mx-auto mt-6 max-w-2xl">
-        {phase === 'gameover' ? (
-          <div className="rounded-3xl border-4 border-red-300 bg-white/95 p-8 text-center text-slate-800 shadow-2xl">
-            <p className="text-5xl">💀</p>
-            <h2 className="font-display mt-2 text-4xl text-red-500">GAME OVER</h2>
-            <p className="mt-1 text-slate-500">You ran out of lives!</p>
-
-            <div className="mx-auto mt-5 max-w-xs rounded-2xl bg-slate-100 p-4">
-              <p className="text-xs font-bold tracking-wide text-slate-400 uppercase">
-                {justRecorded ? 'Final score' : 'Your recorded score'}
-              </p>
-              <p className="font-display mt-1 text-2xl text-indigo-700">{scoreLine}</p>
-            </div>
-
-            <p className="mx-auto mt-4 max-w-sm text-xs text-slate-400">
-              {justRecorded
-                ? 'This score is final and has been recorded on the leaderboard. You can replay for practice, but your score stays as is.'
-                : 'Practice run — your recorded score is unchanged.'}
-            </p>
-
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <button
-                onClick={restart}
-                className="btn-game rounded-2xl bg-gradient-to-b from-amber-400 to-orange-500 px-6 py-3 font-bold text-white"
-              >
-                Restart 🔁
-              </button>
-              <Link
-                to="/"
-                className="btn-game rounded-2xl bg-gradient-to-b from-indigo-500 to-indigo-700 px-6 py-3 font-bold text-white"
-              >
-                Back to archive
-              </Link>
-            </div>
-          </div>
-        ) : phase === 'finished' ? (
-          <div className="rounded-3xl border-4 border-emerald-300 bg-white/95 p-8 text-center text-slate-800 shadow-2xl">
-            <p className="text-5xl">🏁</p>
-            <h2 className="font-display mt-2 text-4xl text-emerald-600">CHALLENGE COMPLETE!</h2>
-            <p className="mt-1 text-slate-500">You made it to the finish flag.</p>
-
-            <div className="mx-auto mt-5 max-w-xs rounded-2xl bg-slate-100 p-4">
-              <p className="text-xs font-bold tracking-wide text-slate-400 uppercase">
-                {justRecorded ? 'Final score' : 'Your recorded score'}
-              </p>
-              <p className="font-display mt-1 text-2xl text-indigo-700">{scoreLine}</p>
-            </div>
-
-            <p className="mx-auto mt-4 max-w-sm text-xs text-slate-400">
-              {justRecorded
-                ? 'This score is final and has been recorded on the leaderboard.'
-                : 'Practice run — your recorded score is unchanged.'}
-            </p>
-
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <button
-                onClick={restart}
-                className="btn-game rounded-2xl bg-gradient-to-b from-amber-400 to-orange-500 px-6 py-3 font-bold text-white"
-              >
-                Replay 🔁
-              </button>
-              <Link
-                to="/"
-                className="btn-game rounded-2xl bg-gradient-to-b from-indigo-500 to-indigo-700 px-6 py-3 font-bold text-white"
-              >
-                Back to archive
-              </Link>
-            </div>
-          </div>
+        {phase === 'gameover' || phase === 'finished' ? (
+          <ChallengeResult
+            outcome={phase}
+            questions={week.questions}
+            correct={weekProgress?.correct ?? 0}
+            points={weekPoints}
+            justRecorded={justRecorded}
+            answersViewed={weekProgress?.answersViewed ?? false}
+            onShowAnswers={revealAnswers}
+            onRestart={restart}
+          />
         ) : phase === 'playing' ? (
           <Mechanic
             key={attempt}

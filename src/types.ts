@@ -31,6 +31,7 @@ export interface WeekProgress {
   bestStreak: number
   completed: boolean
   failed?: boolean
+  answersViewed?: boolean
   badges: string[]
 }
 
