@@ -5,6 +5,10 @@ import { useSession } from '../store/useSession'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
+function firstName(name: string) {
+  return name?.trim().split(/\s+/)[0] || 'Player'
+}
+
 export function Leaderboard() {
   const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null)
   const employeeId = useSession((s) => s.employeeId)
@@ -46,7 +50,10 @@ export function Leaderboard() {
                   <span className="w-8 text-center text-lg font-bold text-slate-500">
                     {MEDALS[i] ?? i + 1}
                   </span>
-                  <span className="font-semibold text-slate-800">{entry.employeeId}</span>
+                  <div className="leading-tight">
+                    <p className="font-semibold text-slate-800">{firstName(entry.name)}</p>
+                    <p className="text-xs text-slate-400">{entry.employeeId}</p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-4 text-sm text-slate-500">
                   <span>{entry.weeksCompleted} weeks</span>

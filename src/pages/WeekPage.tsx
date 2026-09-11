@@ -5,7 +5,6 @@ import { PointsHUD } from '../components/PointsHUD'
 import { BADGES } from '../content/badges'
 import { getWeekById } from '../content/weeks'
 import { MECHANIC_REGISTRY } from '../mechanics/registry'
-import { submitScore } from '../services/leaderboard'
 import { syncProgress } from '../services/session'
 import { useGameProgress } from '../store/useGameProgress'
 import { useSession } from '../store/useSession'
@@ -76,15 +75,18 @@ export function WeekPage() {
     const updated = useGameProgress.getState().weeks[week!.id]
     if (updated) announceNewBadges(updated.badges)
 
-    if (!alreadyLocked && employeeId) {
-      const allWeeks = useGameProgress.getState().weeks
-      const weeksCompleted = Object.values(allWeeks).filter((w) => w.completed && !w.failed).length
-      submitScore(employeeId, useGameProgress.getState().totalPoints(), weeksCompleted)
-      syncProgress(employeeId, allWeeks)
-    }
+    if (!alreadyLocked) publish()
 
     setJustRecorded(!alreadyLocked)
     setPhase(outcome)
+  }
+
+  // The leaderboard is derived from these records server-side, so one sync
+  // covers both saved progress and the published score.
+  function publish() {
+    if (!employeeId) return
+    const { weeks, totalPoints } = useGameProgress.getState()
+    syncProgress(employeeId, weeks, totalPoints())
   }
 
   function restart() {
@@ -94,7 +96,7 @@ export function WeekPage() {
 
   function revealAnswers() {
     markAnswersViewed(week!.id)
-    if (employeeId) syncProgress(employeeId, useGameProgress.getState().weeks)
+    publish()
   }
 
   const streak = weekProgress?.currentStreak ?? 0

@@ -2,20 +2,9 @@ const POLL_INTERVAL_MS = 8000
 
 export interface LeaderboardEntry {
   employeeId: string
+  name: string
   totalPoints: number
   weeksCompleted: number
-}
-
-export async function submitScore(employeeId: string, totalPoints: number, weeksCompleted: number) {
-  try {
-    await fetch('/api/scores', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ employeeId, totalPoints, weeksCompleted }),
-    })
-  } catch {
-    // Best-effort only — local progress is already saved regardless.
-  }
 }
 
 export function subscribeToLeaderboard(callback: (entries: LeaderboardEntry[]) => void) {

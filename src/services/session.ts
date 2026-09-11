@@ -23,12 +23,16 @@ export async function registerSession(employeeId: string, name: string): Promise
   return res.json()
 }
 
-export async function syncProgress(employeeId: string, weeks: Record<string, WeekProgress>) {
+export async function syncProgress(
+  employeeId: string,
+  weeks: Record<string, WeekProgress>,
+  totalPoints: number,
+) {
   try {
     await fetch('/api/session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ employeeId, weeks }),
+      body: JSON.stringify({ employeeId, weeks, totalPoints }),
     })
   } catch {
     // Best-effort only — local progress is already saved regardless.

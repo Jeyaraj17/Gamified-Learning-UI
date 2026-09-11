@@ -1,15 +1,8 @@
 import { getStore } from '@netlify/blobs'
-
-interface UserRecord {
-  employeeId: string
-  name: string
-  weeks: Record<string, unknown>
-  createdAt: number
-  updatedAt: number
-}
+import { USERS_STORE, type UserRecord } from './lib/stores'
 
 export default async (req: Request) => {
-  const store = getStore('users')
+  const store = getStore(USERS_STORE)
   const url = new URL(req.url)
 
   if (req.method === 'GET') {
@@ -30,12 +23,14 @@ export default async (req: Request) => {
     const name = typeof body?.name === 'string' && body.name.trim() ? body.name.trim() : existing?.name
     if (!name) return new Response('Name required for new registration', { status: 400 })
 
-    const weeks = body?.weeks && typeof body.weeks === 'object' ? body.weeks : existing?.weeks ?? {}
-
     const record: UserRecord = {
       employeeId,
       name,
-      weeks,
+      weeks: body?.weeks && typeof body.weeks === 'object' ? body.weeks : existing?.weeks ?? {},
+      totalPoints:
+        typeof body?.totalPoints === 'number' && body.totalPoints >= 0
+          ? body.totalPoints
+          : existing?.totalPoints ?? 0,
       createdAt: existing?.createdAt ?? Date.now(),
       updatedAt: Date.now(),
     }
