@@ -41,6 +41,7 @@ export function ArchiveHome() {
           {WEEKS.map((week) => {
             const progress = weeksProgress[week.id]
             const completed = progress?.completed ?? false
+            const failed = progress?.failed ?? false
             return (
               <Link
                 key={week.id}
@@ -54,7 +55,11 @@ export function ArchiveHome() {
                 <p className="mt-1 text-sm text-slate-500">{week.topic}</p>
                 <p className="mt-3 text-sm text-slate-400">{week.description}</p>
                 <div className="mt-4 flex flex-wrap items-center gap-2">
-                  {completed ? (
+                  {completed && failed ? (
+                    <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                      💀 Out of lives · {progress?.correct ?? 0} correct
+                    </span>
+                  ) : completed ? (
                     <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
                       ✅ Completed
                     </span>

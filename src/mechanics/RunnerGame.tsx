@@ -1,4 +1,3 @@
-import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
 import { LivesHUD } from '../components/LivesHUD'
 import { ProgressBar } from '../components/ProgressBar'
@@ -11,16 +10,14 @@ import { ParallaxBackground } from './runner/ParallaxBackground'
 const MAX_LIVES = 3
 const CORRECT_DELAY_MS = 750
 const WRONG_DELAY_MS = 950
-const GAME_OVER_PAUSE_MS = 1800
 
-export function RunnerGame({ questions, onAnswer, onComplete, onRestart }: MechanicProps) {
+export function RunnerGame({ questions, onAnswer, onComplete, onGameOver }: MechanicProps) {
   const [index, setIndex] = useState(0)
   const [worldPos, setWorldPos] = useState(0)
   const [lives, setLives] = useState(MAX_LIVES)
   const [charState, setCharState] = useState<CharacterState>('idle')
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [locked, setLocked] = useState(false)
-  const [gameOver, setGameOver] = useState(false)
 
   const question = questions[index]
 
@@ -37,22 +34,8 @@ export function RunnerGame({ questions, onAnswer, onComplete, onRestart }: Mecha
     setCharState('idle')
   }
 
-  function triggerGameOver() {
-    setGameOver(true)
-    window.setTimeout(() => {
-      onRestart()
-      setIndex(0)
-      setWorldPos(0)
-      setLives(MAX_LIVES)
-      setSelectedIndex(null)
-      setLocked(false)
-      setCharState('idle')
-      setGameOver(false)
-    }, GAME_OVER_PAUSE_MS)
-  }
-
   function handleSelect(choiceIndex: number) {
-    if (locked || gameOver) return
+    if (locked) return
     const correct = choiceIndex === question.correctIndex
 
     setSelectedIndex(choiceIndex)
@@ -69,7 +52,7 @@ export function RunnerGame({ questions, onAnswer, onComplete, onRestart }: Mecha
     setCharState('falling')
     const remaining = lives - 1
     setLives(remaining)
-    window.setTimeout(remaining <= 0 ? triggerGameOver : advance, WRONG_DELAY_MS)
+    window.setTimeout(remaining <= 0 ? onGameOver : advance, WRONG_DELAY_MS)
   }
 
   return (
@@ -86,26 +69,12 @@ export function RunnerGame({ questions, onAnswer, onComplete, onRestart }: Mecha
         <div className="absolute inset-x-0 bottom-4">
           <BrickTrack total={questions.length} worldPos={worldPos} charState={charState} />
         </div>
-
-        <AnimatePresence>
-          {gameOver && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/60 text-white"
-            >
-              <p className="font-display text-4xl text-red-400">GAME OVER</p>
-              <p className="text-sm text-slate-200">Out of lives — restarting the challenge...</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       <ObstacleQuestion
         question={question}
         selectedIndex={selectedIndex}
-        disabled={locked || gameOver}
+        disabled={locked}
         onSelect={handleSelect}
       />
     </div>

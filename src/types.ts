@@ -30,6 +30,7 @@ export interface WeekProgress {
   currentStreak: number
   bestStreak: number
   completed: boolean
+  failed?: boolean
   badges: string[]
 }
 
@@ -37,5 +38,5 @@ export interface MechanicProps {
   questions: Question[]
   onAnswer: (correct: boolean) => void
   onComplete: () => void
-  onRestart: () => void
+  onGameOver: () => void
 }

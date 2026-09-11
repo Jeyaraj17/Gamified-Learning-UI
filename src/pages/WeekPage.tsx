@@ -12,6 +12,8 @@ import { useSession } from '../store/useSession'
 import type { BadgeDef } from '../types'
 import { ChallengeBriefing } from './ChallengeBriefing'
 
+type Phase = 'briefing' | 'playing' | 'finished' | 'gameover'
+
 export function WeekPage() {
   const { weekId } = useParams<{ weekId: string }>()
   const week = weekId ? getWeekById(weekId) : undefined
@@ -20,13 +22,15 @@ export function WeekPage() {
 
   const weekProgress = useGameProgress((s) => (weekId ? s.weeks[weekId] : undefined))
   const totalPoints = useGameProgress((s) => s.totalPoints())
+  const weekPoints = useGameProgress((s) => (weekId ? s.weekPoints(weekId) : 0))
   const answerQuestion = useGameProgress((s) => s.answerQuestion)
   const finishWeek = useGameProgress((s) => s.finishWeek)
-  const resetWeekAttempt = useGameProgress((s) => s.resetWeekAttempt)
+  const failWeek = useGameProgress((s) => s.failWeek)
 
   const [toastBadge, setToastBadge] = useState<BadgeDef | null>(null)
-  const [started, setStarted] = useState(false)
-  const [justFinished, setJustFinished] = useState(false)
+  const [phase, setPhase] = useState<Phase>('briefing')
+  const [attempt, setAttempt] = useState(0)
+  const [justRecorded, setJustRecorded] = useState(false)
   const knownBadges = useRef<Set<string>>(new Set(weekProgress?.badges ?? []))
 
   if (!week) {
@@ -59,28 +63,35 @@ export function WeekPage() {
     if (updated) announceNewBadges(updated.badges)
   }
 
-  function handleComplete() {
-    const wasCompleted = useGameProgress.getState().weeks[week!.id]?.completed ?? false
-    finishWeek(week!.id, week!.questions.length)
+  // Locks the score in on the first run that reaches an end, then publishes it.
+  // Later replays are practice only — the store ignores them once completed.
+  function finalize(outcome: 'finished' | 'gameover') {
+    const alreadyLocked = useGameProgress.getState().weeks[week!.id]?.completed ?? false
+
+    if (outcome === 'finished') finishWeek(week!.id, week!.questions.length)
+    else failWeek(week!.id)
+
     const updated = useGameProgress.getState().weeks[week!.id]
     if (updated) announceNewBadges(updated.badges)
 
-    if (!wasCompleted && employeeId) {
+    if (!alreadyLocked && employeeId) {
       const allWeeks = useGameProgress.getState().weeks
-      const weeksCompleted = Object.values(allWeeks).filter((w) => w.completed).length
+      const weeksCompleted = Object.values(allWeeks).filter((w) => w.completed && !w.failed).length
       submitScore(employeeId, useGameProgress.getState().totalPoints(), weeksCompleted)
       syncProgress(employeeId, allWeeks)
     }
 
-    setJustFinished(true)
+    setJustRecorded(!alreadyLocked)
+    setPhase(outcome)
   }
 
-  function handleRestart() {
-    resetWeekAttempt(week!.id)
-    knownBadges.current = new Set()
+  function restart() {
+    setAttempt((a) => a + 1)
+    setPhase('playing')
   }
 
   const streak = weekProgress?.currentStreak ?? 0
+  const scoreLine = `${weekProgress?.correct ?? 0} / ${week.questions.length} correct · ${weekPoints} pts`
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-900 via-indigo-800 to-slate-900 px-4 py-6 text-white">
@@ -99,33 +110,88 @@ export function WeekPage() {
       </div>
 
       <div className="mx-auto mt-6 max-w-2xl">
-        {justFinished ? (
-          <div className="rounded-2xl bg-white/95 p-8 text-center text-slate-800 shadow-2xl">
-            <p className="text-4xl">🏁</p>
-            <h2 className="font-display mt-2 text-2xl text-indigo-700">Week complete!</h2>
-            <p className="mt-1 text-slate-500">
-              {weekProgress?.correct ?? 0} / {week.questions.length} correct
+        {phase === 'gameover' ? (
+          <div className="rounded-3xl border-4 border-red-300 bg-white/95 p-8 text-center text-slate-800 shadow-2xl">
+            <p className="text-5xl">💀</p>
+            <h2 className="font-display mt-2 text-4xl text-red-500">GAME OVER</h2>
+            <p className="mt-1 text-slate-500">You ran out of lives!</p>
+
+            <div className="mx-auto mt-5 max-w-xs rounded-2xl bg-slate-100 p-4">
+              <p className="text-xs font-bold tracking-wide text-slate-400 uppercase">
+                {justRecorded ? 'Final score' : 'Your recorded score'}
+              </p>
+              <p className="font-display mt-1 text-2xl text-indigo-700">{scoreLine}</p>
+            </div>
+
+            <p className="mx-auto mt-4 max-w-sm text-xs text-slate-400">
+              {justRecorded
+                ? 'This score is final and has been recorded on the leaderboard. You can replay for practice, but your score stays as is.'
+                : 'Practice run — your recorded score is unchanged.'}
             </p>
-            <Link
-              to="/"
-              className="btn-game mt-4 inline-block rounded-2xl bg-gradient-to-b from-indigo-500 to-indigo-700 px-6 py-2 font-semibold text-white"
-            >
-              Back to archive
-            </Link>
+
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <button
+                onClick={restart}
+                className="btn-game rounded-2xl bg-gradient-to-b from-amber-400 to-orange-500 px-6 py-3 font-bold text-white"
+              >
+                Restart 🔁
+              </button>
+              <Link
+                to="/"
+                className="btn-game rounded-2xl bg-gradient-to-b from-indigo-500 to-indigo-700 px-6 py-3 font-bold text-white"
+              >
+                Back to archive
+              </Link>
+            </div>
           </div>
-        ) : started ? (
+        ) : phase === 'finished' ? (
+          <div className="rounded-3xl border-4 border-emerald-300 bg-white/95 p-8 text-center text-slate-800 shadow-2xl">
+            <p className="text-5xl">🏁</p>
+            <h2 className="font-display mt-2 text-4xl text-emerald-600">CHALLENGE COMPLETE!</h2>
+            <p className="mt-1 text-slate-500">You made it to the finish flag.</p>
+
+            <div className="mx-auto mt-5 max-w-xs rounded-2xl bg-slate-100 p-4">
+              <p className="text-xs font-bold tracking-wide text-slate-400 uppercase">
+                {justRecorded ? 'Final score' : 'Your recorded score'}
+              </p>
+              <p className="font-display mt-1 text-2xl text-indigo-700">{scoreLine}</p>
+            </div>
+
+            <p className="mx-auto mt-4 max-w-sm text-xs text-slate-400">
+              {justRecorded
+                ? 'This score is final and has been recorded on the leaderboard.'
+                : 'Practice run — your recorded score is unchanged.'}
+            </p>
+
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <button
+                onClick={restart}
+                className="btn-game rounded-2xl bg-gradient-to-b from-amber-400 to-orange-500 px-6 py-3 font-bold text-white"
+              >
+                Replay 🔁
+              </button>
+              <Link
+                to="/"
+                className="btn-game rounded-2xl bg-gradient-to-b from-indigo-500 to-indigo-700 px-6 py-3 font-bold text-white"
+              >
+                Back to archive
+              </Link>
+            </div>
+          </div>
+        ) : phase === 'playing' ? (
           <Mechanic
+            key={attempt}
             questions={week.questions}
             onAnswer={handleAnswer}
-            onComplete={handleComplete}
-            onRestart={handleRestart}
+            onComplete={() => finalize('finished')}
+            onGameOver={() => finalize('gameover')}
           />
         ) : (
           <ChallengeBriefing
             week={week}
             progress={weekProgress}
             name={name}
-            onStart={() => setStarted(true)}
+            onStart={() => setPhase('playing')}
           />
         )}
       </div>

@@ -21,9 +21,10 @@ interface GameProgressState {
   answerQuestion: (weekId: string, correct: boolean) => void
   finishWeek: (weekId: string, totalQuestions: number) => void
   totalPoints: () => number
+  weekPoints: (weekId: string) => number
   hydrate: (weeks: Record<string, WeekProgress>) => void
   reset: () => void
-  resetWeekAttempt: (weekId: string) => void
+  failWeek: (weekId: string) => void
 }
 
 export const useGameProgress = create<GameProgressState>()(
@@ -71,14 +72,18 @@ export const useGameProgress = create<GameProgressState>()(
       totalPoints: () =>
         Object.values(get().weeks).reduce((sum, w) => sum + w.correct * POINTS_PER_CORRECT, 0),
 
+      weekPoints: (weekId) => (get().weeks[weekId]?.correct ?? 0) * POINTS_PER_CORRECT,
+
       hydrate: (weeks) => set({ weeks }),
       reset: () => set({ weeks: {} }),
 
-      resetWeekAttempt: (weekId) =>
+      failWeek: (weekId) =>
         set((state) => {
-          const prev = state.weeks[weekId]
-          if (prev?.completed) return state
-          return { weeks: { ...state.weeks, [weekId]: emptyProgress() } }
+          const prev = state.weeks[weekId] ?? emptyProgress()
+          if (prev.completed) return state
+          return {
+            weeks: { ...state.weeks, [weekId]: { ...prev, completed: true, failed: true } },
+          }
         }),
     }),
     { name: 'gamified-learning-progress' },
